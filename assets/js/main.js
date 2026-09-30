@@ -290,7 +290,7 @@ const Hero = (() => {
    band of ASCII shading when they scroll into view.
    ============================================================ */
 const Reveal = (() => {
-  const SEL = ".hero-lede, .page-head h1, .page-head p, .section-head h2, .section-head p, .service h3, .steps h3, .about h2, .about p, .svc-block h2, .svc-block .intro, .case h3, .cta-band h2, .contact > div > p";
+  const SEL = ".hero-lede, .show-head h2, .lead-pitch h2, .page-head h1, .page-head p, .section-head h2, .section-head p, .service h3, .steps h3, .about h2, .about p, .svc-block h2, .svc-block .intro, .case h3, .cta-band h2, .contact > div > p";
   const els = $$(SEL).filter((el) => !el.closest("[data-fx]") && !el.hasAttribute("data-fx"));
 
   // Wrap every character in a span, keeping nested tags (em, b, a) and word wrapping intact.
@@ -382,9 +382,12 @@ const Reveal = (() => {
    ============================================================ */
 const Router = { current: null };
 function route() {
-  const name = (location.hash.replace(/^#\/?/, "") || "home").split("?")[0];
+  const [name0, query = ""] = (location.hash.replace(/^#\/?/, "") || "home").split("?");
+  const name = name0 || "home";
   const page = $(`[data-page="${name}"]`) ? name : "home";
-  if (page === Router.current) return;
+  const toLead = page === "analytics" && /(^|&)lead\b/.test(query);
+  const jump = () => { if (toLead) setTimeout(() => $("#lead-form").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" }), 60); };
+  if (page === Router.current) { jump(); return; }
   Router.current = page;
   Reveal.armPage($(`[data-page="${page}"]`));
   $$(".page").forEach((p) => p.classList.toggle("active", p.dataset.page === page));
@@ -396,15 +399,21 @@ function route() {
   window.scrollTo(0, 0);
   if (page === "home") { Hero.rebuild(); requestAnimationFrame(() => Hero.start()); } else Hero.stop();
   if (page === "analytics") Lab.onShow();
+  jump();
 }
 window.addEventListener("hashchange", route);
+// Clicking a "?lead" link while already on that exact URL fires no hashchange, so scroll by hand.
+document.addEventListener("click", (e) => {
+  const a = e.target.closest('a[href="#/analytics?lead"]');
+  if (a && location.hash === "#/analytics?lead") { e.preventDefault(); $("#lead-form").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" }); }
+});
 
 /* ============================================================
    Analytics lab
    ============================================================ */
 const Lab = (() => {
   const MAX_ROWS = 50000;
-  const state = { rows: [], cols: [], loaded: false };
+  const state = { rows: [], cols: [], loaded: false, source: "no" };
   const charts = {};
   const msg = $("#labMsg");
   const say = (t, err) => { msg.textContent = t; msg.classList.toggle("err", !!err); };
@@ -552,8 +561,19 @@ const Lab = (() => {
         if (!buckets.has(key)) buckets.set(key, []);
         buckets.get(key).push(metric ? metric.values[i] : 1);
       });
-      const pairs = [...buckets.keys()].sort().map((k) => [k, aggregate(buckets.get(k), how)]).filter((e) => isFinite(e[1]));
-      return { kind, unit, labels: pairs.map((e) => e[0]), values: pairs.map((e) => e[1]) };
+      let keys = [...buckets.keys()].sort();
+      // A first or last period with far fewer rows than usual is usually incomplete (data stops mid-month).
+      // For totals and counts that would show a fake drop, so leave it out and say so.
+      const partial = [];
+      if ((how === "sum" || how === "count") && unit !== "day" && keys.length >= 4) {
+        const counts = keys.map((k) => buckets.get(k).length).sort((a, b) => a - b);
+        const median = counts[Math.floor(counts.length / 2)];
+        const edge = (k) => buckets.get(k).length < median * 0.6;
+        if (edge(keys[keys.length - 1])) partial.push(keys.pop());
+        if (edge(keys[0])) partial.push(keys.shift());
+      }
+      const pairs = keys.map((k) => [k, aggregate(buckets.get(k), how)]).filter((e) => isFinite(e[1]));
+      return { kind, unit, partial, labels: pairs.map((e) => e[0]), values: pairs.map((e) => e[1]) };
     }
     group.values.forEach((g, i) => {
       const key = (g === "" || (typeof g === "number" && !isFinite(g))) ? "(blank)" : String(g);
@@ -768,6 +788,8 @@ const Lab = (() => {
       else ins.push(`<b>${esc(top)}</b> has the highest ${aggName.toLowerCase()} ${esc(metric.name)} at ${fmt(topV)}.`);
       if (grouped.values.length > 1) { const lo = grouped.values.length - 1; ins.push(`<b>${esc(grouped.labels[lo])}</b> is at the bottom with ${fmt(grouped.values[lo])}.`); }
     }
+    if (grouped && grouped.partial && grouped.partial.length)
+      ins.push(`${grouped.partial.length > 1 ? "The first and last periods" : `<b>${grouped.partial[0]}</b>`} ${grouped.partial.length > 1 ? `(${grouped.partial.join(", ")}) look` : "looks"} incomplete (far fewer rows than usual), so ${grouped.partial.length > 1 ? "they're" : "it's"} left out of the chart and trend.`);
     if (grouped && grouped.kind === "time" && grouped.values.length >= 2) {
       const v = grouped.values, first = v[0], lastV = v[v.length - 1];
       const ch = first ? (lastV - first) / Math.abs(first) * 100 : NaN;
@@ -846,12 +868,29 @@ const Lab = (() => {
     }
     return lines.join("\n");
   }
-  const SAMPLES = { sales: ["store sales", sampleSales], traffic: ["website traffic", sampleTraffic] };
+  function sampleInventory() {
+    const r = rng(19), whs = ["Lahore DC", "Karachi DC", "Islamabad DC"], cats = ["Phone cases", "Chargers", "Cables", "Earbuds", "Power banks"];
+    const price = [6, 14, 5, 22, 18], lines = ["week,warehouse,category,units_sold,stock_on_hand,stockouts,reorder_cost"];
+    const start = Date.UTC(2026, 0, 5);
+    for (let w = 0; w < 36; w++) {
+      const date = new Date(start + w * 7 * 864e5).toISOString().slice(0, 10);
+      whs.forEach((wh, wi) => cats.forEach((c, ci) => {
+        const demand = Math.round((60 + ci * 18 + wi * 25) * (1 + w / 60) * (0.8 + r() * .4) * (ci === 3 && w > 20 ? 1.6 : 1));
+        const stock = Math.max(0, Math.round(demand * (1.4 + r() * 1.2) - (ci === 3 && w > 20 ? demand * 1.1 : 0)));
+        const outs = stock < demand * .6 ? 1 + Math.floor(r() * 4) : 0;
+        const cost = Math.round((outs ? demand * 1.3 : demand * .9) * price[ci] * .55);
+        lines.push(`${date},${wh},${c},${demand},${stock},${outs},${cost}`);
+      }));
+    }
+    return lines.join("\n");
+  }
+  const SAMPLES = { sales: ["store sales", sampleSales], traffic: ["website traffic", sampleTraffic], inventory: ["inventory", sampleInventory] };
   function loadSample(key) {
     $$(".samples button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.sample === key)));
     const text = SAMPLES[key][1]();
     const lines = text.split("\n");
     $("#csvInput").value = lines.slice(0, 60).join("\n") + (lines.length > 60 ? "\n" : "");
+    if (state.source !== "own") state.source = "sample";
     load(text, "sample " + SAMPLES[key][0]);
     if (lines.length > 60) say(`${msg.textContent} The text box shows the first 60 lines; the full sample is analysed.`);
   }
@@ -861,6 +900,7 @@ const Lab = (() => {
     const t = $("#csvInput").value;
     if (!t.trim()) { say("Paste some CSV data first, or pick a sample.", true); return; }
     $$(".samples button").forEach((b) => b.setAttribute("aria-pressed", "false"));
+    state.source = "own";
     load(t, "your data");
   });
   $("#clearBtn").addEventListener("click", () => {
@@ -881,6 +921,7 @@ const Lab = (() => {
       const lines = text.split(/\r?\n/);
       $("#csvInput").value = lines.slice(0, 60).join("\n");
       $$(".samples button").forEach((b) => b.setAttribute("aria-pressed", "false"));
+      state.source = "own";
       load(text, file.name);
     };
     fr.onerror = () => say("I couldn't read that file. Try exporting it again as CSV.", true);
@@ -895,26 +936,118 @@ const Lab = (() => {
 
   themeListeners.push(() => { if (state.loaded && Router.current === "analytics") render(); });
 
+  // Showcase cards load their dataset and jump to the results.
+  $$("[data-demo]").forEach((b) => b.addEventListener("click", () => {
+    loadSample(b.dataset.demo);
+    requestAnimationFrame(() => $("#labMsg").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" }));
+  }));
+
   return {
+    source: () => state.source,
     onShow() {
-      if (!state.loaded) loadSample("sales");
+      if (!state.loaded) { loadSample("sales"); state.source = "no"; }   // auto-loaded demo doesn't count as trying it
       else requestAnimationFrame(render);   // charts sized while hidden need a redraw
     }
   };
 })();
 
-/* ---------------- Contact form (opens the visitor's email app) ---------------- */
+
+/* ============================================================
+   Lead capture: sends form data to the n8n webhook, falls back
+   to WhatsApp or email if the webhook can't be reached.
+   ============================================================ */
+const Leads = (() => {
+  const waLink = (text) => `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
+  async function send(payload) {
+    if (!CONFIG.leadWebhook) throw new Error("no-webhook");
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 12000);
+    try {
+      const res = await fetch(CONFIG.leadWebhook, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload), signal: ctrl.signal
+      });
+      let data = {};
+      try { data = await res.json(); } catch (e) {}
+      if (!res.ok || data.ok === false) { const err = new Error(data.error || `status ${res.status}`); err.userFacing = !!data.error; throw err; }
+      return data;
+    } finally { clearTimeout(timer); }
+  }
+  function summary(p) {
+    return [`Hi, I'd like a data review.`, `Name: ${p.name}`, `Email: ${p.email}`, p.company ? `Company: ${p.company}` : "",
+      `Need: ${p.project_type}`, p.data_sources ? `Data: ${p.data_sources}` : "", p.budget ? `Budget: ${p.budget}` : "",
+      p.timeline ? `Timeline: ${p.timeline}` : "", "", p.message].filter((x) => x !== "").join("\n");
+  }
+  return { send, summary, waLink };
+})();
+
+const leadForm = $("#leadForm");
+// Clear an error as soon as the visitor starts fixing it.
+leadForm.addEventListener("input", (e) => {
+  if (e.target.classList.contains("invalid")) { e.target.classList.remove("invalid"); $("#leadNote").textContent = ""; }
+});
+leadForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const note = $("#leadNote"), btn = $("#leadSubmit");
+  const fd = new FormData(leadForm);
+  const p = {
+    name: (fd.get("name") || "").trim(), email: (fd.get("email") || "").trim(), whatsapp: (fd.get("whatsapp") || "").trim(),
+    company: (fd.get("company") || "").trim(), project_type: fd.get("project_type") || "",
+    data_sources: fd.getAll("data_sources").join(", "), data_size: fd.get("data_size") || "",
+    budget: fd.get("budget") || "", timeline: fd.get("timeline") || "", message: (fd.get("message") || "").trim(),
+    tried_lab: Lab.source(), source_page: location.hash || "#/analytics", website: fd.get("website") || ""
+  };
+  // Client-side checks mirror the workflow's rules so people see problems instantly.
+  leadForm.querySelectorAll(".invalid").forEach((x) => x.classList.remove("invalid"));
+  const fail = (sel, text) => { const el = leadForm.querySelector(sel); el.classList.add("invalid"); el.focus(); note.style.color = cssVar("--danger"); note.textContent = text; };
+  if (p.name.length < 2) return fail('[name="name"]', "Please enter your name.");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(p.email)) return fail('[name="email"]', "Please enter a valid email address.");
+  if (!p.project_type) return fail('[name="project_type"]', "Please choose what you need.");
+  if (p.message.length < 10) return fail('[name="message"]', "Please tell us a little more (at least 10 characters).");
+
+  btn.disabled = true; btn.textContent = "Sending...";
+  note.style.color = cssVar("--muted"); note.textContent = "";
+  try {
+    const res = await Leads.send(p);
+    const ref = res.lead_id ? `<p>Your reference: <span class="ref">${res.lead_id}</span></p>` : "";
+    leadForm.innerHTML = `<div class="lead-done"><h3>Thanks, ${p.name.split(" ")[0].replace(/[<>&"']/g, "")}. We've got it.</h3>
+      <p>We'll reply within one working day with next steps.</p>${ref}
+      <a class="btn btn-ghost" href="${Leads.waLink(`Hi, I just sent a data review request${res.lead_id ? " (ref " + res.lead_id + ")" : ""}.`)}" target="_blank" rel="noopener">Want a faster reply? Message us on WhatsApp</a></div>`;
+  } catch (err) {
+    btn.disabled = false; btn.textContent = "Get my free data review";
+    if (err.userFacing) { note.style.color = cssVar("--danger"); note.textContent = err.message; return; }
+    // Webhook unreachable (offline, blocked, not set): don't lose the lead, hand it to WhatsApp or email.
+    note.style.color = cssVar("--gold");
+    note.innerHTML = `We couldn't send the form just now. Your details are ready to go by
+      <a href="${Leads.waLink(Leads.summary(p))}" target="_blank" rel="noopener" style="color:#25D366;font-weight:700">WhatsApp</a> or
+      <a href="mailto:${CONFIG.email}?subject=${encodeURIComponent("Data review request: " + p.project_type)}&body=${encodeURIComponent(Leads.summary(p))}" style="color:var(--gold);font-weight:700">email</a>.`;
+  }
+});
+
+/* ---------------- Contact form ---------------- */
 $("#contactForm").addEventListener("submit", (e) => {
   e.preventDefault();
   const f = e.target, note = $("#formNote");
   const bad = [...f.querySelectorAll("[required]")].find((i) => !i.value.trim() || (i.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(i.value)));
   if (bad) { note.style.color = cssVar("--danger"); note.textContent = bad.type === "email" ? "Enter a valid email address." : "Fill in your name, email and message."; bad.focus(); return; }
   const d = Object.fromEntries(new FormData(f));
+  if (d.message.trim().length < 10) { note.style.color = cssVar("--danger"); note.textContent = "Please tell us a little more (at least 10 characters)."; f.querySelector('[name="message"]').focus(); return; }
   const body = `Name: ${d.name}\nEmail: ${d.email}\nCompany: ${d.company || "-"}\nTopic: ${d.topic}\n\n${d.message}`;
-  const href = `mailto:${CONFIG.email}?subject=${encodeURIComponent("Consultation request: " + d.topic)}&body=${encodeURIComponent(body)}`;
-  note.style.color = cssVar("--teal");
-  note.textContent = "Opening your email app with the message ready to send.";
-  window.location.href = href;
+  const mailto = `mailto:${CONFIG.email}?subject=${encodeURIComponent("Consultation request: " + d.topic)}&body=${encodeURIComponent(body)}`;
+  const btn = f.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = "Sending...";
+  // Contact enquiries go to the same lead table, tagged with the chosen topic.
+  Leads.send({ name: d.name.trim(), email: d.email.trim(), company: (d.company || "").trim(), project_type: d.topic,
+               message: d.message.trim(), tried_lab: Lab.source(), source_page: "#/contact", website: d.website || "" })
+    .then((res) => {
+      f.innerHTML = `<div class="lead-done"><h3>Thanks, we've got your message.</h3><p>We'll reply within one working day.</p>${res.lead_id ? `<p>Your reference: <span class="ref">${res.lead_id}</span></p>` : ""}</div>`;
+    })
+    .catch((err) => {
+      btn.disabled = false; btn.textContent = "Send message";
+      if (err.userFacing) { note.style.color = cssVar("--danger"); note.textContent = err.message; return; }
+      note.style.color = cssVar("--gold");
+      note.innerHTML = `We couldn't send the form just now. Please use <a href="${mailto}" style="color:var(--gold);font-weight:700">email</a> or <a href="${Leads.waLink(body)}" target="_blank" rel="noopener" style="color:#25D366;font-weight:700">WhatsApp</a> instead.`;
+    });
 });
 
 route();

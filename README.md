@@ -11,7 +11,8 @@ Plain HTML, CSS and JavaScript. No build step, no framework, no server needed.
 | `#/` | Home: particle name hero, services, recent builds, process, about |
 | `#/services` | AI systems, automation and data analytics in detail |
 | `#/work` | Case studies |
-| `#/analytics` | Interactive analytics lab (paste or upload a CSV, get charts and insights) |
+| `#/analytics` | Data project showcase, interactive analytics lab, and the lead form |
+| `#/analytics?lead` | Same page, scrolled straight to the lead form (use this in ads, posts and bios) |
 | `#/contact` | Contact form, WhatsApp, email and social links |
 
 ## Features
@@ -20,6 +21,8 @@ Plain HTML, CSS and JavaScript. No build step, no framework, no server needed.
 - Wave reveal: headings and paragraphs are printed by a band of ASCII shading as they scroll into view
 - Hover effects: sweep on links, retype on buttons, wave on project titles, ASCII shade on the footer name
 - Analytics lab: runs fully in the browser, detects number/date/text columns, builds trend, ranking, distribution, share and correlation views, and writes plain-English insights
+- Data project showcase: three live example dashboards (sales, marketing, inventory) that open in the lab
+- Lead capture: a "free data review" form that sends leads to an n8n workflow, with WhatsApp/email fallback
 - WhatsApp button in the nav (icon in the top bar on phones)
 - Dark and light themes, mobile layout, keyboard support, respects "reduce motion"
 
@@ -56,6 +59,26 @@ const CONFIG = {
 
 If you rename the brand, also change the logo text (`quanta/flow`), the footer name and the `<title>` in `index.html`.
 
+## Lead capture
+
+Both the data review form (analytics page) and the contact form send leads to:
+
+```
+https://atifmahmoodai.app.n8n.cloud/webhook/quantaflow-data-leads
+```
+
+That URL belongs to the n8n workflow **Quantaflow: Data Analytics Website Leads**. It:
+
+1. validates the lead (name, email, project type, message) and ignores bots that fill the hidden `website` field,
+2. scores it 0 to 100 from budget, timeline, data size, whether they tried the lab, company and WhatsApp given,
+3. marks it `hot` (60+), `warm` (35 to 59) or `cold`,
+4. saves it to the n8n data table **website_data_analytics_leads**,
+5. replies with a reference number that the visitor sees.
+
+If the webhook can't be reached, the visitor gets ready-made WhatsApp and email links with their details filled in, so the lead is not lost.
+
+To send leads somewhere else, change `leadWebhook` in `assets/js/config.js`.
+
 ## Run locally
 
 Open `index.html` in a browser, or serve the folder:
@@ -73,6 +96,5 @@ python -m http.server 8000
 
 ## Notes
 
-- The contact form opens the visitor's email app with the message filled in. To receive submissions directly, point the form at a service such as Formspree or an n8n webhook.
 - Charts load Chart.js from jsDelivr. If it can't load, the analytics lab still shows numbers and insights.
 - The analytics lab accepts CSV. Excel files need to be saved as CSV first.

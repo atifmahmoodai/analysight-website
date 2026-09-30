@@ -326,3 +326,72 @@ table.data td.num { text-align: right; }
   .page.active { animation: none; }
   .typing .tw-caret { animation: none; }
 }
+
+/* ---------- Data project showcase ---------- */
+.showcase { margin: 0 0 56px; }
+.show-head { max-width: 60ch; margin-bottom: 26px; }
+.show-head h2 { font-size: clamp(1.8rem, 3.4vw, 2.6rem); margin-bottom: 12px; }
+.show-head p { color: var(--muted); margin: 0; }
+.show-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.show-card {
+  position: relative; border: 1px solid var(--line); border-radius: 16px; padding: 24px; min-width: 0;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--violet) 16%, var(--bg-2)), var(--bg-2) 55%);
+  display: flex; flex-direction: column; gap: 10px; transition: transform .25s, border-color .25s, box-shadow .25s;
+}
+.show-card:hover { transform: translateY(-3px); border-color: var(--gold); box-shadow: 0 18px 40px -22px color-mix(in srgb, var(--gold-2) 80%, transparent); }
+.show-card .tag { font-family: var(--mono); font-size: 12px; color: var(--teal); }
+.show-card h3 { font-size: 1.45rem; }
+.show-card p { color: var(--muted); font-size: 15px; margin: 0; flex: 1; }
+.chips { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 4px 0 8px; }
+.chips li { font-family: var(--mono); font-size: 11.5px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink); }
+.show-card .btn { align-self: flex-start; }
+
+/* ---------- Lead strip (inside results) ---------- */
+.lead-strip {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  margin: 0 0 20px; padding: 16px 20px; border-radius: 14px;
+  background: linear-gradient(100deg, color-mix(in srgb, var(--gold) 16%, transparent), color-mix(in srgb, var(--rose) 16%, transparent));
+  border: 1px solid color-mix(in srgb, var(--gold-2) 45%, transparent);
+}
+.lead-strip p { margin: 0; }
+.lead-strip b { color: var(--gold); }
+
+/* ---------- Lead form ---------- */
+.lead { display: grid; grid-template-columns: 1fr 1.35fr; gap: 48px; padding: 56px 0 0; border-top: 1px solid var(--line); scroll-margin-top: calc(var(--nav-h) + 20px); }
+.lead-pitch h2 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 16px; }
+.lead-pitch > p { color: var(--muted); }
+.lead-list { list-style: none; padding: 0; margin: 22px 0; }
+.lead-list li { padding: 10px 0 10px 30px; position: relative; border-bottom: 1px solid var(--line); }
+.lead-list li::before { content: "✓"; position: absolute; left: 0; top: 9px; color: var(--teal); font-weight: 700; }
+.lead-privacy { font-size: 13.5px; }
+.lead-card { border: 1px solid var(--line); border-radius: 18px; padding: 26px; background: var(--bg-2); min-width: 0; }
+.form .pair.three { grid-template-columns: 1fr 1fr 1fr; }
+.chip-field { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-field legend { font-family: var(--mono); font-size: 12.5px; color: var(--muted); margin-bottom: 8px; padding: 0; }
+.chip-field label { display: inline-flex; flex-direction: row; cursor: pointer; }
+.chip-field input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.chip-field span {
+  font-family: var(--sans); font-size: 14px; color: var(--ink); padding: 7px 14px; border-radius: 999px;
+  border: 1px solid var(--line); transition: background .15s, border-color .15s;
+}
+.chip-field input:checked + span { background: color-mix(in srgb, var(--teal) 20%, transparent); border-color: var(--teal); }
+.chip-field input:focus-visible + span { outline: 2px solid var(--gold); outline-offset: 2px; }
+.hp { position: absolute !important; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.lead-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.lead-alt { font-size: 14px; color: var(--muted); }
+.lead-alt a { color: #25D366; font-weight: 700; }
+.form .invalid { border-color: var(--danger) !important; }
+.lead-done { text-align: center; padding: 30px 10px; }
+.lead-done h3 { font-size: 1.8rem; margin-bottom: 10px; }
+.lead-done p { color: var(--muted); margin: 0 0 18px; }
+.lead-done .ref { font-family: var(--mono); color: var(--gold); }
+button[disabled] { opacity: .6; cursor: progress; }
+
+@media (max-width: 960px) {
+  .show-grid { grid-template-columns: 1fr; }
+  .lead { grid-template-columns: 1fr; gap: 28px; }
+}
+@media (max-width: 760px) {
+  .form .pair.three { grid-template-columns: 1fr; }
+  .lead-card { padding: 18px; }
+}

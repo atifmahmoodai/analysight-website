@@ -140,6 +140,7 @@
       <h2>Tell us which task you're tired of doing by hand</h2>
       <div class="row">
         <a class="btn btn-solid" href="#/contact" data-fx="retype" data-alt="let's fix it">Book a consultation</a>
+        <a class="btn btn-ghost" href="#/analytics?lead" data-fx="scramble">Free data review</a>
       </div>
     </div>
   </section>
@@ -184,7 +185,7 @@
           <div><h4>what you get</h4><ul><li>One place to see how the business is doing</li><li>Reports that arrive without anyone building them</li><li>Decisions based on numbers, not guesses</li><li>Early warning when something changes</li></ul></div>
         </div>
         <div class="tools"><span>Python</span><span>SQL</span><span>Google Sheets</span><span>Looker Studio</span><span>Power BI</span></div>
-        <p style="margin-top:28px"><a class="btn btn-ghost" href="#/analytics" data-fx="scramble">Open the live analytics demo</a></p>
+        <p style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap"><a class="btn btn-ghost" href="#/analytics" data-fx="scramble">Open the live analytics demo</a><a class="btn btn-solid" href="#/analytics?lead" data-fx="scramble">Get a free data review</a></p>
       </div>
     </div>
   </div>
@@ -220,7 +221,38 @@
       <p>Paste a CSV, upload a file or load a sample. Everything runs in your browser; your data is never uploaded anywhere.</p>
     </header>
 
-    <div class="lab-input">
+    <section class="showcase" aria-label="Example data analytics projects">
+      <div class="show-head">
+        <p class="kicker">data projects</p>
+        <h2>Dashboards we build, live on this page</h2>
+        <p>Each example runs on sample data right here. Open one to explore it, then imagine it on your own numbers.</p>
+      </div>
+      <div class="show-grid">
+        <article class="show-card">
+          <span class="tag">Retail and e-commerce</span>
+          <h3>Sales performance</h3>
+          <p>Revenue by region, product and channel, monthly trend, best and worst sellers, and orders that look wrong.</p>
+          <ul class="chips"><li>Trends</li><li>Rankings</li><li>Outliers</li></ul>
+          <button class="btn btn-ghost btn-sm" type="button" data-demo="sales">Open live demo</button>
+        </article>
+        <article class="show-card">
+          <span class="tag">Marketing</span>
+          <h3>Traffic and sign-ups</h3>
+          <p>Which channels bring visitors, which ones convert, and how growth is moving week to week.</p>
+          <ul class="chips"><li>Attribution</li><li>Conversion</li><li>Growth</li></ul>
+          <button class="btn btn-ghost btn-sm" type="button" data-demo="traffic">Open live demo</button>
+        </article>
+        <article class="show-card">
+          <span class="tag">Operations</span>
+          <h3>Inventory and stock-outs</h3>
+          <p>Stock levels and sales by warehouse and category, where stock runs out, and what reordering costs.</p>
+          <ul class="chips"><li>Stock health</li><li>Costs</li><li>Warehouses</li></ul>
+          <button class="btn btn-ghost btn-sm" type="button" data-demo="inventory">Open live demo</button>
+        </article>
+      </div>
+    </section>
+
+    <div class="lab-input" id="labStart">
       <div class="panel">
         <h3>Paste CSV data</h3>
         <p class="sub">First row should be column names. Comma, semicolon and tab separators all work.</p>
@@ -240,6 +272,7 @@
         <div class="samples">
           <button type="button" data-sample="sales" aria-pressed="false">Sample: store sales<small>Daily orders by region, product and channel</small></button>
           <button type="button" data-sample="traffic" aria-pressed="false">Sample: website traffic<small>Sessions and sign-ups by source</small></button>
+          <button type="button" data-sample="inventory" aria-pressed="false">Sample: inventory<small>Stock and sales by warehouse and category</small></button>
         </div>
       </div>
     </div>
@@ -262,6 +295,10 @@
         <div class="panel"><h3 id="mainTitle">Breakdown</h3><div class="chart-box"><canvas id="chMain"></canvas></div></div>
         <div class="panel"><h3>What the data says</h3><ul class="insights" id="insights"></ul></div>
       </div>
+      <div class="lead-strip" id="leadStrip">
+        <p><b>Like what you see?</b> <span id="leadStripText">We can build this as a live dashboard on your own data.</span></p>
+        <a class="btn btn-solid btn-sm" href="#/analytics?lead">Get a free data review</a>
+      </div>
       <div class="grid-2b">
         <div class="panel"><h3 id="histTitle">Distribution</h3><div class="chart-box sm"><canvas id="chHist"></canvas></div></div>
         <div class="panel"><h3 id="shareTitle">Share</h3><div class="chart-box sm"><canvas id="chShare"></canvas></div></div>
@@ -270,8 +307,59 @@
         <div class="panel"><h3>Column summary</h3><div class="scroll-x" id="summary"></div></div>
         <div class="panel"><h3>How columns move together</h3><div class="scroll-x" id="corr"></div></div>
       </div>
-      <div class="panel" style="margin-bottom:100px"><h3>Data preview</h3><p class="sub" id="previewNote"></p><div class="scroll-x" style="max-height:380px" id="preview"></div></div>
+      <div class="panel" style="margin-bottom:40px"><h3>Data preview</h3><p class="sub" id="previewNote"></p><div class="scroll-x" style="max-height:380px" id="preview"></div></div>
     </div>
+
+    <section class="lead" id="lead-form" aria-labelledby="leadTitle">
+      <div class="lead-pitch">
+        <p class="kicker">free data review</p>
+        <h2 id="leadTitle">Want this on your real data?</h2>
+        <p>Tell us about your data and what you need to know. We'll reply with a plan, a fixed quote and a timeline.</p>
+        <ul class="lead-list">
+          <li>A free 20-minute review of your data and goals</li>
+          <li>A sample dashboard built from your own numbers</li>
+          <li>A fixed price before any work starts</li>
+        </ul>
+        <p class="lead-privacy">We only receive what you type in this form. Anything you analysed above stayed in your browser.</p>
+      </div>
+      <form class="form lead-card" id="leadForm" novalidate>
+        <div class="pair">
+          <label>Your name *<input name="name" required autocomplete="name" maxlength="120"></label>
+          <label>Email *<input name="email" type="email" required autocomplete="email" maxlength="160"></label>
+        </div>
+        <div class="pair">
+          <label>WhatsApp (optional)<input name="whatsapp" type="tel" autocomplete="tel" placeholder="+92 300 1234567" maxlength="30"></label>
+          <label>Company<input name="company" autocomplete="organization" maxlength="160"></label>
+        </div>
+        <label>What do you need? *<select name="project_type" required>
+          <option value="">Choose one</option>
+          <option>Sales dashboard</option><option>Marketing analytics</option><option>Financial reporting</option>
+          <option>Operations or inventory</option><option>Data cleaning and automation</option><option>Custom analysis</option><option>Not sure yet</option>
+        </select></label>
+        <fieldset class="chip-field">
+          <legend>Where does your data live?</legend>
+          <label><input type="checkbox" name="data_sources" value="Excel or Google Sheets"><span>Excel or Google Sheets</span></label>
+          <label><input type="checkbox" name="data_sources" value="CSV exports"><span>CSV exports</span></label>
+          <label><input type="checkbox" name="data_sources" value="POS or e-commerce"><span>POS or e-commerce</span></label>
+          <label><input type="checkbox" name="data_sources" value="CRM"><span>CRM</span></label>
+          <label><input type="checkbox" name="data_sources" value="Accounting software"><span>Accounting software</span></label>
+          <label><input type="checkbox" name="data_sources" value="Database or SQL"><span>Database or SQL</span></label>
+        </fieldset>
+        <div class="pair three">
+          <label>Data size<select name="data_size"><option value="">Not sure</option><option>Under 10k rows</option><option>10k to 100k rows</option><option>100k to 1 million rows</option><option>Over 1 million rows</option></select></label>
+          <label>Budget (USD)<select name="budget"><option value="">Not sure yet</option><option>Under $500</option><option>$500 to $2,000</option><option>$2,000 to $5,000</option><option>$5,000+</option></select></label>
+          <label>Timeline<select name="timeline"><option value="">Not sure yet</option><option>As soon as possible</option><option>Within 1 to 3 months</option><option>Just exploring</option></select></label>
+        </div>
+        <label>What would you like to find out or track? *<textarea name="message" required maxlength="3000" placeholder="e.g. We sell in 4 cities and want to see which products and branches make the most profit each month."></textarea></label>
+        <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+        <div class="lead-actions">
+          <button class="btn btn-solid" type="submit" id="leadSubmit">Get my free data review</button>
+          <span class="lead-alt">or <a class="js-wa" href="#" target="_blank" rel="noopener">chat on WhatsApp</a></span>
+        </div>
+        <p class="form-note" id="leadNote" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+    <div style="height:90px"></div>
   </div>
 </section>
 
@@ -302,7 +390,8 @@
           <label>Company<input name="company" autocomplete="organization"></label>
           <label>I need help with<select name="topic"><option>AI systems</option><option>Automation</option><option>Data analytics</option><option>Not sure yet</option></select></label>
         </div>
-        <label>What would you like to automate or understand?<textarea name="message" required></textarea></label>
+        <label>What would you like to automate or understand?<textarea name="message" required maxlength="3000"></textarea></label>
+        <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
         <div><button class="btn btn-solid" type="submit">Send message</button></div>
         <p class="form-note" id="formNote" role="status" aria-live="polite"></p>
       </form>
