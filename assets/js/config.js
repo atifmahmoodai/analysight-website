@@ -8,8 +8,8 @@ const CONFIG = {
   email: "hello@analysight.com",              // set up free forwarding: Cloudflare > analysight.com > Email Routing
   // Leads from the website forms are sent here (your n8n workflow "AnalySight: Data Analytics Website Leads").
   leadWebhook: "https://atifmahmoodai.app.n8n.cloud/webhook/analysight-data-leads",
-  whatsapp: "923001234567",                   // your number: country code + number, digits only (no +, spaces or 0 prefix)
+  whatsapp: "923212658545",                   // your number: country code + number, digits only (no +, spaces or 0 prefix)
   whatsappMessage: "Hi, I'd like to talk about automating part of my business.",
-  linkedin: "https://www.linkedin.com/",
-  youtube: "https://www.youtube.com/"
+  linkedin: "www.linkedin.com/in/atifmahmoodai",
+  youtube: "www.youtube.com/@atifmahmoodai"
 };
