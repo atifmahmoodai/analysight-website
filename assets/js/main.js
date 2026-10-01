@@ -1,4 +1,4 @@
-/* Quantaflow website: effects, router, analytics lab, contact form. */
+/* AnalySight website: effects, router, analytics lab, contact form. */
 (() => {
 "use strict";
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -19,10 +19,10 @@ $$(".js-wa-num").forEach((a) => { a.textContent = "+" + waNumber; });
 const themeListeners = [];
 function applyTheme(t) {
   document.documentElement.setAttribute("data-theme", t);
-  try { localStorage.setItem("qf-theme", t); } catch (e) {}
+  try { localStorage.setItem("as-theme", t); } catch (e) {}
   themeListeners.forEach((fn) => fn());
 }
-try { const saved = localStorage.getItem("qf-theme"); if (saved === "light" || saved === "dark") document.documentElement.setAttribute("data-theme", saved); } catch (e) {}
+try { const saved = localStorage.getItem("as-theme"); if (saved === "light" || saved === "dark") document.documentElement.setAttribute("data-theme", saved); } catch (e) {}
 $("#themeBtn").addEventListener("click", () => {
   applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
 });

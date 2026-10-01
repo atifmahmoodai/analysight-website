@@ -1,6 +1,6 @@
-# Quantaflow Website
+# AnalySight Website
 
-Marketing website for **Quantaflow**, a consultancy for AI systems, business automation and data analytics.
+Marketing website for **AnalySight** (https://analysight.com), a consultancy for AI systems, business automation and data analytics.
 
 Plain HTML, CSS and JavaScript. No build step, no framework, no server needed.
 
@@ -29,7 +29,7 @@ Plain HTML, CSS and JavaScript. No build step, no framework, no server needed.
 ## Project structure
 
 ```
-quantaflow-website/
+analysight-website/
 ├── index.html            # all pages (hash-routed)
 ├── assets/
 │   ├── css/style.css     # design tokens, layout, effects
@@ -46,10 +46,10 @@ Edit `assets/js/config.js`:
 
 ```js
 const CONFIG = {
-  brand: "Quantaflow",
-  brandLine: "QUANTAFLOW",              // what the particles spell
-  brandLinesMobile: ["QUANTA", "FLOW"], // two lines on phones
-  email: "hello@yourdomain.com",
+  brand: "AnalySight",
+  brandLine: "ANALYSIGHT",              // what the particles spell
+  brandLinesMobile: ["ANALY", "SIGHT"], // two lines on phones
+  email: "hello@analysight.com",
   whatsapp: "923001234567",             // country code + number, digits only
   whatsappMessage: "Hi, I'd like to talk about automating part of my business.",
   linkedin: "https://www.linkedin.com/",
@@ -57,17 +57,17 @@ const CONFIG = {
 };
 ```
 
-If you rename the brand, also change the logo text (`quanta/flow`), the footer name and the `<title>` in `index.html`.
+If you rename the brand, also change the logo text (`analy/sight`), the footer name and the `<title>` in `index.html`.
 
 ## Lead capture
 
 Both the data review form (analytics page) and the contact form send leads to:
 
 ```
-https://atifmahmoodai.app.n8n.cloud/webhook/quantaflow-data-leads
+https://atifmahmoodai.app.n8n.cloud/webhook/analysight-data-leads
 ```
 
-That URL belongs to the n8n workflow **Quantaflow: Data Analytics Website Leads**. It:
+That URL belongs to the n8n workflow **AnalySight: Data Analytics Website Leads**. It:
 
 1. validates the lead (name, email, project type, message) and ignores bots that fill the hidden `website` field,
 2. scores it 0 to 100 from budget, timeline, data size, whether they tried the lab, company and WhatsApp given,
@@ -90,7 +90,9 @@ python -m http.server 8000
 
 ## Deploy
 
-**GitHub Pages:** push to GitHub, then Settings > Pages > Source: `main` branch, `/ (root)`. The site goes live at `https://<username>.github.io/quantaflow-website/`.
+**Cloudflare Pages (recommended, the domain is registered at Cloudflare):** Workers & Pages > Create > Pages > Connect to Git > pick this repo. Build command: none. Output directory: `/`. Then Custom domains > add `analysight.com` and `www.analysight.com`.
+
+**GitHub Pages:** push to GitHub, then Settings > Pages > Source: `main` branch, `/ (root)`. The site goes live at `https://<username>.github.io/analysight-website/`.
 
 **Netlify or Vercel:** import the repository. No build command; publish directory is the repository root.
 
