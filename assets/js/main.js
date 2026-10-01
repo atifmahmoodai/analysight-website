@@ -959,18 +959,24 @@ const Lab = (() => {
 const Leads = (() => {
   const waLink = (text) => `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
   async function send(payload) {
-    if (!CONFIG.leadWebhook) throw new Error("no-webhook");
+    if (!/^https:\/\//.test(CONFIG.leadWebhook || "")) throw new Error("no-webhook");
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 12000);
+    const timer = setTimeout(() => ctrl.abort(), 20000);   // Google Apps Script can take a few seconds on a cold start
     try {
+      // text/plain keeps this a "simple" request, so no CORS preflight is needed
+      // (Google Apps Script can't answer preflights; n8n accepts it too).
       const res = await fetch(CONFIG.leadWebhook, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload), signal: ctrl.signal
+        method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload), signal: ctrl.signal, redirect: "follow"
       });
-      let data = {};
+      let data = null;
       try { data = await res.json(); } catch (e) {}
-      if (!res.ok || data.ok === false) { const err = new Error(data.error || `status ${res.status}`); err.userFacing = !!data.error; throw err; }
-      return data;
+      if (data && data.ok === true) return data;
+      // Only a clear "ok: true" counts as saved. Anything else (a login page, an error page) falls back,
+      // so a lead is never shown "thanks" without actually being stored.
+      const err = new Error((data && data.error) || `status ${res.status}`);
+      err.userFacing = !!(data && data.error);
+      throw err;
     } finally { clearTimeout(timer); }
   }
   function summary(p) {

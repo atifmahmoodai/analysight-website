@@ -61,23 +61,16 @@ If you rename the brand, also change the logo text (`analy/sight`), the footer n
 
 ## Lead capture
 
-Both the data review form (analytics page) and the contact form send leads to:
+Both the data review form (analytics page) and the contact form post leads to `leadWebhook` in `assets/js/config.js`.
 
-```
-https://atifmahmoodai.app.n8n.cloud/webhook/analysight-data-leads
-```
+**Recommended (free, permanent):** a Google Apps Script that saves leads to a Google Sheet and emails you each one.
+The script is in `apps-script/Code.gs`; follow **SETUP-LEADS.md** (about 10 minutes).
 
-That URL belongs to the n8n workflow **AnalySight: Data Analytics Website Leads**. It:
+**Also supported:** the n8n workflow "AnalySight: Data Analytics Website Leads" (same validation and scoring).
 
-1. validates the lead (name, email, project type, message) and ignores bots that fill the hidden `website` field,
-2. scores it 0 to 100 from budget, timeline, data size, whether they tried the lab, company and WhatsApp given,
-3. marks it `hot` (60+), `warm` (35 to 59) or `cold`,
-4. saves it to the n8n data table **website_data_analytics_leads**,
-5. replies with a reference number that the visitor sees.
-
-If the webhook can't be reached, the visitor gets ready-made WhatsApp and email links with their details filled in, so the lead is not lost.
-
-To send leads somewhere else, change `leadWebhook` in `assets/js/config.js`.
+Both validate the lead, ignore spam bots (hidden `website` field), score it 0 to 100 (hot / warm / cold), save it and
+return a reference number the visitor sees. If the endpoint can't be reached, or answers with anything other than
+`{"ok": true}`, the visitor gets ready-made WhatsApp and email links instead, so no lead is lost.
 
 ## Run locally
 
