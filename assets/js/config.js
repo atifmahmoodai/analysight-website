@@ -10,6 +10,6 @@ const CONFIG = {
     leadWebhook: "https://script.google.com/macros/s/AKfycbwM_1Ccdo2Bgd27sI8hV7Ng9Rn4EjXjzUX-lwgDVXkjUhO5z90AtjJGBjFtx_iooJpbKw/exec",
   whatsapp: "923452377711",                   // your number: country code + number, digits only (no +, spaces or 0 prefix)
   whatsappMessage: "Hi, I'd like to talk about automating part of my business.",
-  linkedin: "www.linkedin.com/in/atifmahmoodai",
-  youtube: "www.youtube.com/@atifmahmoodai"
+  linkedin: "https://www.linkedin.com/in/atifmahmoodai",
+youtube: "https://www.youtube.com/@atifmahmoodai"
 };

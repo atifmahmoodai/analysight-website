@@ -161,3 +161,7 @@ function setup() {
   }
   console.log("Setup complete. Now deploy as a web app.");
 }
+/** Returns a JSON response (used by doGet and doPost). */
+function json_(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
